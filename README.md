@@ -104,6 +104,12 @@ const client = createIdempotentAxios(axios.create(), {
   
   // Delay between lock retries in ms (default: 100)
   lockRetryDelay: 150,
+  
+  // Custom logger (default: console)
+  logger: {
+    warn: (message, ...args) => console.warn(message, ...args),
+    error: (message, ...args) => console.error(message, ...args),
+  },
 });
 ```
 
@@ -119,6 +125,7 @@ const client = createIdempotentAxios(axios.create(), {
 | `idempotency` | `IdempotencyConfig` | See below | Idempotency configuration |
 | `maxLockRetries` | `number` | `10` | Maximum number of lock acquisition retry attempts |
 | `lockRetryDelay` | `number` | `100` | Delay between lock retry attempts in milliseconds |
+| `logger` | `Logger` | `console` | Custom logger for warnings and errors |
 
 #### `IdempotencyConfig`
 
@@ -333,6 +340,28 @@ Generates an idempotency key from a request configuration.
 **Returns:** `string` - The generated idempotency key
 
 ## Advanced Usage
+
+### Custom Logger
+
+You can provide a custom logger to integrate with your logging framework:
+
+```typescript
+import { createIdempotentAxios } from 'axios-idempotency-manager';
+import winston from 'winston'; // or any other logger
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [new winston.transports.Console()],
+});
+
+const client = createIdempotentAxios(axios.create(), {
+  logger: {
+    warn: (message, ...args) => logger.warn(message, args),
+    error: (message, ...args) => logger.error(message, args),
+  },
+});
+```
 
 ### Skip Idempotency for Specific Requests
 
