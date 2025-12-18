@@ -18,7 +18,12 @@
     "deduplication",
     "interceptor",
     "redis",
-    "typescript"
+    "typescript",
+    "singleflight",
+    "distributed-lock",
+    "backend",
+    "nodejs",
+    "unique"
   ],
   "author": "",
   "license": "MIT",
