@@ -105,6 +105,9 @@ const client = createIdempotentAxios(axios.create(), {
   // Delay between lock retries in ms (default: 100)
   lockRetryDelay: 150,
   
+  // Extended polling multiplier for concurrent requests (default: 5)
+  extendedPollMultiplier: 6,
+  
   // Custom logger (default: console)
   logger: {
     warn: (message, ...args) => console.warn(message, ...args),
@@ -125,6 +128,7 @@ const client = createIdempotentAxios(axios.create(), {
 | `idempotency` | `IdempotencyConfig` | See below | Idempotency configuration |
 | `maxLockRetries` | `number` | `10` | Maximum number of lock acquisition retry attempts |
 | `lockRetryDelay` | `number` | `100` | Delay between lock retry attempts in milliseconds |
+| `extendedPollMultiplier` | `number` | `5` | Multiplier for extended polling when waiting for concurrent requests (total wait = maxLockRetries * extendedPollMultiplier * lockRetryDelay) |
 | `logger` | `Logger` | `console` | Custom logger for warnings and errors |
 
 #### `IdempotencyConfig`

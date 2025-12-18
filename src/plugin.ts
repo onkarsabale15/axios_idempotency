@@ -41,6 +41,7 @@ const DEFAULT_OPTIONS: Required<Omit<IdempotencyOptions, 'redisClient'>> = {
   },
   maxLockRetries: 10,
   lockRetryDelay: 100,
+  extendedPollMultiplier: 5,
   logger: defaultLogger,
 };
 
@@ -150,11 +151,35 @@ export function createIdempotentAxios(
       }
 
       if (!lockAcquired) {
-        // Could not acquire lock after retries
-        // Let the request proceed anyway to avoid blocking
-        logger.warn(
-          `Could not acquire lock for ${idempotencyKey} after ${retries} retries`
-        );
+        // Could not acquire lock after initial retries
+        // Continue polling cache for a longer period before giving up
+        const longPollRetries = config.maxLockRetries * config.extendedPollMultiplier;
+        let pollCount = 0;
+        
+        while (pollCount < longPollRetries) {
+          await delay(config.lockRetryDelay);
+          pollCount++;
+          
+          // Check if response is now cached
+          const cachedError = await getCachedResponse(idempotencyKey);
+          if (cachedError) {
+            throw cachedError;
+          }
+          
+          // Try to acquire lock again in case the previous holder released it
+          lockAcquired = await storage.acquireLock(idempotencyKey, config.ttl);
+          if (lockAcquired) {
+            break;
+          }
+        }
+        
+        if (!lockAcquired) {
+          // Still couldn't acquire lock after extended polling
+          // Let the request proceed to avoid indefinite blocking
+          logger.warn(
+            `Could not acquire lock for ${idempotencyKey} after ${retries} initial retries and ${pollCount} extended polling attempts`
+          );
+        }
       }
 
       return requestConfig;
