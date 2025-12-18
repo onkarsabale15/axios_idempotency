@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { createIdempotentAxios } from '../src/plugin';
 
@@ -371,7 +371,7 @@ describe('createIdempotentAxios', () => {
       expect(fulfilled).toHaveLength(100);
       expect(rejected).toHaveLength(0);
       
-      fulfilled.forEach((result: any) => {
+      fulfilled.forEach((result: PromiseFulfilledResult<AxiosResponse>) => {
         expect(result.value.status).toBe(200);
         expect(result.value.data).toEqual({ id: 1, status: 'created' });
       });

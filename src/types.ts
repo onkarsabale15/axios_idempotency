@@ -55,6 +55,8 @@ export interface IdempotencyOptions {
   maxLockRetries?: number;
   /** Delay between lock retry attempts in ms (default: 100) */
   lockRetryDelay?: number;
+  /** Multiplier for extended polling attempts when lock cannot be acquired (default: 5) */
+  extendedPollMultiplier?: number;
   /** Custom logger (default: console) */
   logger?: Logger;
 }
