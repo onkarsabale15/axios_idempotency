@@ -30,6 +30,16 @@ export interface IdempotencyConfig {
 export type StorageBackend = 'memory' | 'redis';
 
 /**
+ * Logger interface for custom logging
+ */
+export interface Logger {
+  warn(message: string, ...args: any[]): void;
+  error(message: string, ...args: any[]): void;
+  info?(message: string, ...args: any[]): void;
+  debug?(message: string, ...args: any[]): void;
+}
+
+/**
  * Main configuration options for the idempotency plugin
  */
 export interface IdempotencyOptions {
@@ -45,6 +55,8 @@ export interface IdempotencyOptions {
   maxLockRetries?: number;
   /** Delay between lock retry attempts in ms (default: 100) */
   lockRetryDelay?: number;
+  /** Custom logger (default: console) */
+  logger?: Logger;
 }
 
 /**
@@ -98,4 +110,19 @@ export interface CachedResponse {
 export interface IdempotentRequestConfig extends AxiosRequestConfig {
   _idempotencyKey?: string;
   _skipIdempotency?: boolean;
+}
+
+/**
+ * Custom error for cached response handling
+ */
+export class CachedResponseError extends Error {
+  public readonly isCached = true;
+  public readonly cachedResponse: CachedResponse;
+
+  constructor(cachedResponse: CachedResponse) {
+    super('CACHED_RESPONSE');
+    this.name = 'CachedResponseError';
+    this.cachedResponse = cachedResponse;
+    Object.setPrototypeOf(this, CachedResponseError.prototype);
+  }
 }

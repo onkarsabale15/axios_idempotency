@@ -1,4 +1,13 @@
 import { StorageAdapter } from './adapter';
+import { Logger } from '../types';
+
+/**
+ * Default logger using console
+ */
+const defaultLogger: Logger = {
+  warn: (message: string, ...args: any[]) => console.warn(message, ...args),
+  error: (message: string, ...args: any[]) => console.error(message, ...args),
+};
 
 /**
  * Redis storage adapter for distributed systems
@@ -6,12 +15,14 @@ import { StorageAdapter } from './adapter';
  */
 export class RedisAdapter implements StorageAdapter {
   private redis: any;
+  private logger: Logger;
 
-  constructor(redisClient: any) {
+  constructor(redisClient: any, logger: Logger = defaultLogger) {
     if (!redisClient) {
       throw new Error('Redis client is required for RedisAdapter');
     }
     this.redis = redisClient;
+    this.logger = logger;
   }
 
   /**
@@ -21,7 +32,7 @@ export class RedisAdapter implements StorageAdapter {
     try {
       return await this.redis.get(key);
     } catch (error) {
-      console.error('Redis get error:', error);
+      this.logger.error('Redis get error:', error);
       return null;
     }
   }
@@ -34,7 +45,7 @@ export class RedisAdapter implements StorageAdapter {
     try {
       await this.redis.setex(key, ttl, value);
     } catch (error) {
-      console.error('Redis set error:', error);
+      this.logger.error('Redis set error:', error);
       throw error;
     }
   }
@@ -66,7 +77,7 @@ export class RedisAdapter implements StorageAdapter {
       // Result is 'OK' if lock acquired, null if key already exists
       return result === 'OK';
     } catch (error) {
-      console.error('Redis acquireLock error:', error);
+      this.logger.error('Redis acquireLock error:', error);
       return false;
     }
   }
@@ -81,7 +92,7 @@ export class RedisAdapter implements StorageAdapter {
     try {
       await this.redis.del(lockKey);
     } catch (error) {
-      console.error('Redis releaseLock error:', error);
+      this.logger.error('Redis releaseLock error:', error);
       // Don't throw - best effort release
     }
   }

@@ -3,6 +3,8 @@ import {
   IdempotencyOptions,
   StorageAdapter,
   IdempotentRequestConfig,
+  CachedResponseError,
+  Logger,
 } from './types';
 import { MemoryAdapter } from './storage/memory';
 import { RedisAdapter } from './storage/redis';
@@ -13,6 +15,14 @@ import {
   serializeResponse,
   deserializeResponse,
 } from './utils';
+
+/**
+ * Default logger using console
+ */
+const defaultLogger: Logger = {
+  warn: (message: string, ...args: any[]) => console.warn(message, ...args),
+  error: (message: string, ...args: any[]) => console.error(message, ...args),
+};
 
 /**
  * Default configuration values
@@ -31,6 +41,7 @@ const DEFAULT_OPTIONS: Required<Omit<IdempotencyOptions, 'redisClient'>> = {
   },
   maxLockRetries: 10,
   lockRetryDelay: 100,
+  logger: defaultLogger,
 };
 
 /**
@@ -68,8 +79,24 @@ export function createIdempotentAxios(
   // Initialize storage adapter
   const storage: StorageAdapter =
     config.backend === 'redis'
-      ? new RedisAdapter(options.redisClient)
+      ? new RedisAdapter(options.redisClient, config.logger)
       : new MemoryAdapter();
+
+  const logger = config.logger;
+
+  /**
+   * Helper to return cached response if available
+   */
+  async function getCachedResponse(idempotencyKey: string): Promise<CachedResponseError | null> {
+    const cachedData = await storage.get(idempotencyKey);
+    if (cachedData) {
+      const cachedResponse = deserializeResponse(cachedData);
+      if (cachedResponse) {
+        return new CachedResponseError(cachedResponse);
+      }
+    }
+    return null;
+  }
 
   /**
    * Request interceptor
@@ -97,16 +124,9 @@ export function createIdempotentAxios(
       (requestConfig as any)._idempotencyKey = idempotencyKey;
 
       // Check cache first
-      const cachedData = await storage.get(idempotencyKey);
-      if (cachedData) {
-        const cachedResponse = deserializeResponse(cachedData);
-        if (cachedResponse) {
-          // Return cached response by throwing with special marker
-          const error: any = new Error('CACHED_RESPONSE');
-          error.isCached = true;
-          error.cachedResponse = cachedResponse;
-          throw error;
-        }
+      const cachedError = await getCachedResponse(idempotencyKey);
+      if (cachedError) {
+        throw cachedError;
       }
 
       // Try to acquire lock
@@ -122,15 +142,9 @@ export function createIdempotentAxios(
           retries++;
 
           // Check cache again in case another request completed
-          const cachedData = await storage.get(idempotencyKey);
-          if (cachedData) {
-            const cachedResponse = deserializeResponse(cachedData);
-            if (cachedResponse) {
-              const error: any = new Error('CACHED_RESPONSE');
-              error.isCached = true;
-              error.cachedResponse = cachedResponse;
-              throw error;
-            }
+          const cachedError = await getCachedResponse(idempotencyKey);
+          if (cachedError) {
+            throw cachedError;
           }
         }
       }
@@ -138,7 +152,7 @@ export function createIdempotentAxios(
       if (!lockAcquired) {
         // Could not acquire lock after retries
         // Let the request proceed anyway to avoid blocking
-        console.warn(
+        logger.warn(
           `Could not acquire lock for ${idempotencyKey} after ${retries} retries`
         );
       }
@@ -165,7 +179,7 @@ export function createIdempotentAxios(
           const serialized = serializeResponse(response);
           await storage.set(idempotencyKey, serialized, config.ttl);
         } catch (error) {
-          console.error('Error caching response:', error);
+          logger.error('Error caching response:', error);
         } finally {
           // Always release lock
           await storage.releaseLock(idempotencyKey);
@@ -176,7 +190,7 @@ export function createIdempotentAxios(
     },
     async (error) => {
       // Handle cached response
-      if (error.isCached && error.cachedResponse) {
+      if (error instanceof CachedResponseError) {
         return Promise.resolve(error.cachedResponse);
       }
 
@@ -186,7 +200,7 @@ export function createIdempotentAxios(
         try {
           await storage.releaseLock(requestConfig._idempotencyKey);
         } catch (releaseError) {
-          console.error('Error releasing lock:', releaseError);
+          logger.error('Error releasing lock:', releaseError);
         }
       }
 

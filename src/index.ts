@@ -16,6 +16,8 @@ export {
   StorageAdapter,
   CachedResponse,
   IdempotentRequestConfig,
+  Logger,
+  CachedResponseError,
 } from './types';
 export { MemoryAdapter } from './storage/memory';
 export { RedisAdapter } from './storage/redis';
