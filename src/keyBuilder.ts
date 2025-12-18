@@ -45,10 +45,35 @@ export function buildIdempotencyKey(
   }
 
   // Serialize deterministically and hash
-  const serialized = JSON.stringify(parts, Object.keys(parts).sort());
+  const serialized = deterministicStringify(parts);
   const hash = crypto.createHash('sha256').update(serialized).digest('hex');
 
   return `axios-idempotent:${hash}`;
+}
+
+/**
+ * Deterministically serialize an object
+ * Ensures consistent key ordering for reliable hashing
+ */
+function deterministicStringify(obj: any): string {
+  if (obj === null || obj === undefined) {
+    return JSON.stringify(obj);
+  }
+
+  if (typeof obj !== 'object') {
+    return JSON.stringify(obj);
+  }
+
+  if (Array.isArray(obj)) {
+    return '[' + obj.map(deterministicStringify).join(',') + ']';
+  }
+
+  const keys = Object.keys(obj).sort();
+  const pairs = keys.map(key => {
+    return JSON.stringify(key) + ':' + deterministicStringify(obj[key]);
+  });
+
+  return '{' + pairs.join(',') + '}';
 }
 
 /**
