@@ -1,0 +1,45 @@
+{
+  "name": "axios-idempotency-manager",
+  "version": "1.0.0",
+  "description": "Production-ready TypeScript package that adds idempotency, request deduplication, and caching to Axios using interceptors",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "axios",
+    "idempotency",
+    "cache",
+    "deduplication",
+    "interceptor",
+    "redis",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/onkarsabale15/axios_idempotency.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "peerDependencies": {
+    "axios": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "axios": "^1.6.0",
+    "typescript": "^5.0.0"
+  },
+  "optionalDependencies": {
+    "ioredis": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
