@@ -1,6 +1,6 @@
 # axios-idempotency-manager
 
-Production-ready TypeScript package that adds **idempotency**, **request deduplication**, and **caching** to Axios using interceptors.
+Package that adds **idempotency**, **request deduplication**, and **caching** to Axios using interceptors.
 
 ## Features
 
