@@ -322,6 +322,63 @@ describe('createIdempotentAxios', () => {
       // (plus potentially a few more due to race conditions in lock acquisition)
       expect(count).toBeLessThanOrEqual(3);
     });
+
+    it('should handle 100 concurrent identical requests with only one API call', async () => {
+      let count = 0;
+      mock.onPost('/api/connection').reply(() => {
+        count++;
+        return new Promise(resolve => {
+          // Simulate a slower API response
+          setTimeout(() => resolve([200, { id: count, status: 'created' }]), 100);
+        });
+      });
+
+      const client = createIdempotentAxios(axiosInstance, {
+        backend: 'memory',
+        ttl: 60,
+        idempotency: {
+          methods: ['POST'],
+          include: {
+            path: true,
+            query: true,
+            headers: [],
+            body: true,
+          },
+        },
+      });
+
+      const payload = {
+        ehrName: 'athenaNet',
+        appType: 'system',
+        grantType: 'client_credentials',
+      };
+
+      // Fire 100 identical requests concurrently
+      const promises = Array.from({ length: 100 }, () =>
+        client.post('/api/connection', payload, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+      );
+
+      const results = await Promise.allSettled(promises);
+
+      // All should succeed
+      const fulfilled = results.filter((r) => r.status === 'fulfilled');
+      const rejected = results.filter((r) => r.status === 'rejected');
+      
+      expect(fulfilled).toHaveLength(100);
+      expect(rejected).toHaveLength(0);
+      
+      fulfilled.forEach((result: any) => {
+        expect(result.value.status).toBe(200);
+        expect(result.value.data).toEqual({ id: 1, status: 'created' });
+      });
+
+      // Only one actual request should have been made
+      expect(count).toBe(1);
+    }, 15000); // Increase timeout for this test
   });
 
   describe('Default configuration', () => {
