@@ -1053,6 +1053,67 @@ import {
 } from 'axios-idempotency-manager';
 ```
 
+### Using `_skipIdempotency` with TypeScript
+
+To use the `_skipIdempotency` flag without type errors, you have two options:
+
+**Option 1: Type Assertion (Quick)**
+```typescript
+await client.post('/api/log', data, {
+  _skipIdempotency: true,
+} as any);
+```
+
+**Option 2: Extend the Interface (Recommended)**
+
+Create a type declaration file (e.g., `types/axios.d.ts`) in your project:
+
+```typescript
+import 'axios';
+
+declare module 'axios' {
+  export interface AxiosRequestConfig {
+    _skipIdempotency?: boolean;
+  }
+}
+```
+
+Then use it without type assertions:
+
+```typescript
+await client.post('/api/log', data, {
+  _skipIdempotency: true, // ✅ No type error
+});
+```
+
+### Custom Storage Adapter TypeScript Example
+
+Implement your own storage backend with full type safety:
+
+```typescript
+import { StorageAdapter } from 'axios-idempotency-manager';
+
+class MyCustomAdapter implements StorageAdapter {
+  async get(key: string): Promise<string | null> {
+    // Your implementation
+    return null;
+  }
+
+  async set(key: string, value: string, ttl: number): Promise<void> {
+    // Your implementation
+  }
+
+  async acquireLock(key: string, ttl: number): Promise<boolean> {
+    // Your implementation
+    return true;
+  }
+
+  async releaseLock(key: string): Promise<void> {
+    // Your implementation
+  }
+}
+```
+
 ## License
 
 MIT
