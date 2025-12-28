@@ -41,8 +41,10 @@ async function main() {
 
   try {
     // SCENARIO 1: Firing multiple identical requests concurrently
-    console.log('📤 Firing 5 IDENTICAL POST requests simultaneously...');
-    console.log('   Without idempotency: 5 API calls, 5 orders created');
+    const NUM_REQUESTS = 5; // Number of concurrent requests to simulate
+    
+    console.log(`📤 Firing ${NUM_REQUESTS} IDENTICAL POST requests simultaneously...`);
+    console.log(`   Without idempotency: ${NUM_REQUESTS} API calls, ${NUM_REQUESTS} orders created`);
     console.log('   With idempotency: 1 API call, others wait for result\n');
 
     const startTime = Date.now();
@@ -53,7 +55,7 @@ async function main() {
     };
 
     // Fire 5 identical requests at the same time
-    const promises = Array.from({ length: 5 }, (_, i) =>
+    const promises = Array.from({ length: NUM_REQUESTS }, (_, i) =>
       client.post('/posts', requestData).then(response => {
         const elapsed = Date.now() - startTime;
         console.log(`   Request #${i + 1}: ✓ Status ${response.status}, ID: ${response.data.id}, Time: ${elapsed}ms`);
@@ -65,7 +67,7 @@ async function main() {
     const responses = await Promise.all(promises);
 
     const totalTime = Date.now() - startTime;
-    console.log(`\n✅ All 5 requests completed in ${totalTime}ms`);
+    console.log(`\n✅ All ${NUM_REQUESTS} requests completed in ${totalTime}ms`);
     
     // Verify all responses are identical (same ID = only one request was made)
     const ids = responses.map(r => r.data.id);

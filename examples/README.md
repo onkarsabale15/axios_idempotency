@@ -281,11 +281,11 @@ Feel free to modify these examples for your needs:
 
 | Example | Best For | Deployment Type | Complexity |
 |---------|----------|----------------|------------|
-| basic-usage.ts | Learning the basics | Single server | ⭐ Easy |
-| advanced-config.ts | Fine-tuning behavior | Any | ⭐⭐ Medium |
-| concurrent-requests.ts | Understanding performance | Any | ⭐⭐ Medium |
-| skip-idempotency.ts | Selective bypassing | Any | ⭐ Easy |
-| redis-storage.ts | Production distributed systems | Multi-server | ⭐⭐⭐ Advanced |
+| basic-usage.ts | Learning the basics | Single server | Easy ⭐ |
+| advanced-config.ts | Fine-tuning behavior | Any | Medium ⭐⭐ |
+| concurrent-requests.ts | Understanding performance | Any | Medium ⭐⭐ |
+| skip-idempotency.ts | Selective bypassing | Any | Easy ⭐ |
+| redis-storage.ts | Production distributed systems | Multi-server | Advanced ⭐⭐⭐ |
 
 ## Next Steps
 

@@ -20,7 +20,7 @@ import { createIdempotentAxios } from '../dist/index';
 // Step 1: Create a regular Axios instance with your configuration
 const baseClient = axios.create({
   baseURL: 'https://jsonplaceholder.typicode.com',
-  timeout: 5000, // Your existing configurations are preserved
+  timeout: 5000, // Timeout in milliseconds - your existing configurations are preserved
 });
 
 // Step 2: Wrap it with idempotency features

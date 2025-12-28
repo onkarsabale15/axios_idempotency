@@ -929,9 +929,13 @@ A: The default TTL is 300 seconds (5 minutes).
 A: By default, POST, PUT, and PATCH methods are protected. GET, DELETE, and others are not affected unless you configure them.
 
 **Q: Can I disable idempotency for specific requests?**  
-A: Yes! Use the `_skipIdempotency: true` flag in your request config:
+A: Yes! Use the `_skipIdempotency: true` flag in your request config. For TypeScript, see the [TypeScript Support](#typescript-support) section for the proper way to extend types:
 ```typescript
+// Quick way (type assertion)
 await client.post('/api/log', data, { _skipIdempotency: true } as any);
+
+// Better way (extend the interface - see TypeScript Support section)
+await client.post('/api/log', data, { _skipIdempotency: true });
 ```
 
 **Q: How do I know if my request was served from cache?**  
