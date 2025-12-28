@@ -2,6 +2,28 @@
 
 A production-ready TypeScript package that adds **idempotency**, **request deduplication**, and **intelligent caching** to Axios using interceptors.
 
+## Table of Contents
+
+- [Why Use This Library?](#why-use-this-library)
+- [Features](#features)
+- [When to Use This Library](#when-to-use-this-library)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Configuration](#configuration)
+- [How It Works](#how-it-works)
+- [Use Cases](#use-cases)
+- [Storage Adapters](#storage-adapters)
+- [API Reference](#api-reference)
+- [Advanced Usage](#advanced-usage)
+- [Performance Considerations](#performance-considerations)
+- [Troubleshooting](#troubleshooting)
+- [Best Practices](#best-practices)
+- [Migration Guide](#migration-guide)
+- [FAQ](#faq)
+- [TypeScript Support](#typescript-support)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Why Use This Library?
 
 Have you ever faced these problems?
